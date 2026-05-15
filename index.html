@@ -32,7 +32,7 @@
         }
 
         .logo {
-            width: 220px; /* Немного увеличил для мобильных */
+            width: 220px;
             height: auto;
             display: block;
         }
@@ -131,10 +131,14 @@
             let phone = document.getElementById('phone').value;
             let address = document.getElementById('address').value;
 
-            if (!name || !phone || !address) {
-                tg.showAlert("Пожалуйста, заполните все поля формы");
+            if (name.length < 2 || phone.length < 5 || address.length < 5) {
+                tg.showAlert("Пожалуйста, заполните контактные данные полностью");
                 return;
             }
+
+            // Меняем состояние кнопки сразу
+            btn.innerText = "ЗАПИСЫВАЕМ...";
+            btn.disabled = true;
 
             let data = {
                 name: name,
@@ -142,28 +146,22 @@
                 address: address
             };
 
-            // Визуальная реакция
-            btn.innerText = "ЗАПИСЫВАЕМ...";
-            btn.disabled = true;
-
             fetch('https://eoq7cejdotidzt7.m.pipedream.net/', {
                 method: 'POST',
+                mode: 'no-cors', // Позволяет отправить данные без ожидания CORS-ответа
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
             })
-            .then(response => {
-                if (response.ok) {
-                    tg.showConfirm("Благодарим за заказ! Наш консьерж свяжется с вами в ближайшее время.", function(ok){
-                        tg.close();
-                    });
-                } else {
-                    throw new Error();
-                }
+            .then(() => {
+                // В режиме 'no-cors' браузер считает запрос успешным сразу после отправки
+                tg.showConfirm("Благодарим за заказ! Мы свяжемся с вами в ближайшее время.", function() {
+                    tg.close();
+                });
             })
             .catch(error => {
                 btn.innerText = "ЗАКАЗАТЬ LE VASE LIVRE";
                 btn.disabled = false;
-                tg.showAlert("Произошла ошибка при отправке. Пожалуйста, проверьте интернет или попробуйте позже.");
+                tg.showAlert("Ошибка при отправке. Попробуйте еще раз.");
             });
         };
     </script>
