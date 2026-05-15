@@ -86,6 +86,16 @@
             opacity: 0.7;
         }
 
+        /* Стиль для нового текста под кнопкой */
+        .info-text {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 13px;
+            color: var(--accent-color);
+            line-height: 1.5;
+            font-style: italic;
+        }
+
         .footer {
             margin-top: 40px;
             padding-bottom: 20px;
@@ -110,6 +120,10 @@
         <input type="tel" id="phone" placeholder="Номер телефона">
         <input type="text" id="address" placeholder="Адрес ПВЗ СДЭК">
         <button id="send">ЗАКАЗАТЬ LE VASE LIVRE</button>
+        
+        <div class="info-text">
+            После заполнения формы наш консьерж свяжется с вами в Telegram для подтверждения заказа. Спасибо!
+        </div>
     </div>
 
     <div class="footer">
@@ -136,7 +150,7 @@
                 return;
             }
 
-            // 1. Визуально фиксируем состояние
+            // Визуальная реакция
             btn.innerText = "ОТПРАВЛЯЕМ...";
             btn.disabled = true;
 
@@ -146,23 +160,26 @@
                 address: address
             };
 
-            // 2. Отправляем данные в Pipedream (без режима ожидания CORS)
             fetch('https://eoq7cejdotidzt7.m.pipedream.net/', {
                 method: 'POST',
                 mode: 'no-cors', 
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
+            })
+            .then(() => {
+                // Возвращаем кнопку в исходное состояние через 3 секунды, 
+                // чтобы пользователь не думал, что всё зависло
+                setTimeout(() => {
+                    btn.innerText = "ЗАКАЗАТЬ LE VASE LIVRE";
+                    btn.disabled = false;
+                    tg.showAlert("Заявка отправлена! Ожидайте сообщения от консьержа.");
+                }, 3000);
+            })
+            .catch(error => {
+                btn.innerText = "ЗАКАЗАТЬ LE VASE LIVRE";
+                btn.disabled = false;
+                tg.showAlert("Ошибка при отправке. Попробуйте еще раз.");
             });
-
-            // 3. Задержка полсекунды, чтобы анимация сработала плавно, и вызов благодарности
-            setTimeout(() => {
-                tg.showConfirm("Благодарим за заказ! Наш консьерж свяжется с вами в ближайшее время.", function(ok){
-                    tg.close();
-                });
-                
-                // На всякий случай: если окно не закрыли кнопкой, закрываем через 7 секунд
-                setTimeout(() => { tg.close(); }, 7000);
-            }, 500); 
         };
     </script>
 </body>
