@@ -136,8 +136,8 @@
                 return;
             }
 
-            // Меняем состояние кнопки сразу
-            btn.innerText = "ЗАПИСЫВАЕМ...";
+            // 1. Визуально фиксируем состояние
+            btn.innerText = "ОТПРАВЛЯЕМ...";
             btn.disabled = true;
 
             let data = {
@@ -146,23 +146,23 @@
                 address: address
             };
 
+            // 2. Отправляем данные в Pipedream (без режима ожидания CORS)
             fetch('https://eoq7cejdotidzt7.m.pipedream.net/', {
                 method: 'POST',
-                mode: 'no-cors', // Позволяет отправить данные без ожидания CORS-ответа
+                mode: 'no-cors', 
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
-            })
-            .then(() => {
-                // В режиме 'no-cors' браузер считает запрос успешным сразу после отправки
-                tg.showConfirm("Благодарим за заказ! Мы свяжемся с вами в ближайшее время.", function() {
+            });
+
+            // 3. Задержка полсекунды, чтобы анимация сработала плавно, и вызов благодарности
+            setTimeout(() => {
+                tg.showConfirm("Благодарим за заказ! Наш консьерж свяжется с вами в ближайшее время.", function(ok){
                     tg.close();
                 });
-            })
-            .catch(error => {
-                btn.innerText = "ЗАКАЗАТЬ LE VASE LIVRE";
-                btn.disabled = false;
-                tg.showAlert("Ошибка при отправке. Попробуйте еще раз.");
-            });
+                
+                // На всякий случай: если окно не закрыли кнопкой, закрываем через 7 секунд
+                setTimeout(() => { tg.close(); }, 7000);
+            }, 500); 
         };
     </script>
 </body>
