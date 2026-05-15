@@ -5,41 +5,134 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { font-family: sans-serif; background-color: #fbfbf9; color: #000; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        h2 { font-weight: 300; margin-bottom: 30px; }
-        input { width: 100%; padding: 12px; margin-bottom: 20px; border: 1px solid #eee; border-radius: 8px; outline: none; }
-        button { background: #000; color: #fff; border: none; padding: 15px 30px; border-radius: 25px; width: 100%; cursor: pointer; }
+        :root {
+            --brand-color: #2c2c2c; /* Основной темный для текста и кнопок */
+            --bg-color: #faf9f6;    /* Светлый кремовый фон (эстетика бумаги) */
+            --input-bg: #ffffff;
+            --accent-color: #8e7f71; /* Цвет вашего логотипа/акцентов */
+        }
+
+        body {
+            font-family: 'Playfair Display', serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto;
+            background-color: var(--bg-color);
+            color: var(--brand-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .logo {
+            width: 180px;
+            margin-bottom: 30px;
+            margin-top: 20px;
+        }
+
+        h2 {
+            font-weight: 300;
+            letter-spacing: 1px;
+            margin-bottom: 25px;
+            text-transform: uppercase;
+            font-size: 1.2em;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 400px;
+        }
+
+        input {
+            width: 100%;
+            padding: 14px;
+            margin-bottom: 15px;
+            border: 1px solid #e0ddd5;
+            border-radius: 8px;
+            background: var(--input-bg);
+            box-sizing: border-box;
+            outline: none;
+            font-size: 16px;
+        }
+
+        input:focus {
+            border-color: var(--accent-color);
+        }
+
+        button {
+            width: 100%;
+            padding: 16px;
+            background-color: var(--brand-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            letter-spacing: 1px;
+            transition: opacity 0.3s ease;
+            margin-top: 10px;
+        }
+
+        button:active {
+            opacity: 0.8;
+        }
     </style>
 </head>
 <body>
-    <h2>Оформление заказа</h2>
-    <input type="text" id="name" placeholder="Ваше ФИО">
-    <input type="tel" id="phone" placeholder="Номер телефона">
-    <input type="text" id="address" placeholder="Адрес ПВЗ СДЭК">
-    <button id="send">Заказать Le Vase Livre</button>
+
+    <img src="https://github.com/UpperTrout71529/Spring-Renaissance-Concierge/blob/main/SR%20LOGO%20PNG.png?raw=true" alt="Spring Renaissance" class="logo">
+
+    <div class="container">
+        <h2>Оформление заказа</h2>
+        <input type="text" id="name" placeholder="Ваше Имя">
+        <input type="tel" id="phone" placeholder="Номер телефона">
+        <input type="text" id="address" placeholder="Адрес ПВЗ СДЭК">
+        <button id="send">ЗАКАЗАТЬ LE VASE LIVRE</button>
+    </div>
 
     <script>
         let tg = window.Telegram.WebApp;
+        let btn = document.getElementById('send');
         tg.expand();
 
-        document.getElementById('send').onclick = function() {
+        btn.onclick = function() {
+            let name = document.getElementById('name').value;
+            let phone = document.getElementById('phone').value;
+            let address = document.getElementById('address').value;
+
+            if (name.length < 2 || phone.length < 5) {
+                tg.showAlert("Пожалуйста, заполните контактные данные");
+                return;
+            }
+
             let data = {
-                name: document.getElementById('name').value,
-                phone: document.getElementById('phone').value,
-                address: document.getElementById('address').value
+                name: name,
+                phone: phone,
+                address: address
             };
 
-            fetch('https://eoq7cejdotidzt7.m.pipedream.net', {
+            // Визуальная реакция
+            btn.innerText = "ОТПРАВЛЯЕМ...";
+            btn.disabled = true;
+
+            fetch('https://eoq7cejdotidzt7.m.pipedream.net/', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
             })
             .then(response => {
                 if (response.ok) {
-                    tg.close();
+                    tg.showAlert("Благодарим за заказ! Мы свяжемся с вами в ближайшее время.");
+                    setTimeout(() => tg.close(), 2000); // Закрываем WebApp через 2 сек
+                } else {
+                    throw new Error();
                 }
             })
-            .catch(error => alert('Ошибка отправки'));
+            .catch(error => {
+                btn.innerText = "ЗАКАЗАТЬ LE VASE LIVRE";
+                btn.disabled = false;
+                tg.showAlert("Произошла ошибка. Попробуйте еще раз.");
+            });
         };
     </script>
 </body>
