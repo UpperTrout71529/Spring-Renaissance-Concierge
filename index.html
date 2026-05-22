@@ -136,52 +136,52 @@
     </div>
 
     <script>
-        let tg = window.Telegram.WebApp;
-        let btn = document.getElementById('send');
-        tg.expand();
-        tg.ready();
+    let tg = window.Telegram.WebApp;
+    let btn = document.getElementById('send');
+    tg.expand();
+    tg.ready();
 
-        btn.onclick = function() {
-            let name = document.getElementById('name').value;
-            let phone = document.getElementById('phone').value;
-            let address = document.getElementById('address').value;
+    btn.onclick = function() {
+        let name = document.getElementById('name').value;
+        let phone = document.getElementById('phone').value;
+        let address = document.getElementById('address').value;
+        let telegram = document.getElementById('telegram').value;
 
-            if (name.length < 2 || phone.length < 5 || address.length < 5) {
-                tg.showAlert("Пожалуйста, заполните контактные данные полностью");
-                return;
-            }
+        // Проверка заполнения всех полей (включая Телеграм)
+        if (name.length < 2 || phone.length < 5 || address.length < 5 || telegram.length < 2) {
+            tg.showAlert("Пожалуйста, заполните все контактные данные полностью");
+            return;
+        }
 
-            // Визуальная реакция
-            btn.innerText = "ЗАПИСАНО";
-            btn.disabled = true;
+        // Визуальная реакция
+        btn.innerText = "ЗАПИСАНО";
+        btn.disabled = true;
 
-            let data = {
-                name: name,
-                phone: phone,
-                address: address
-            };
+        // Теперь отправляем полный набор данных
+        let data = {
+            name: name,
+            phone: phone,
+            address: address,
+            telegram: telegram
+        };
 
-            fetch('https://eoq7cejdotidzt7.m.pipedream.net/', {
-                method: 'POST',
-                mode: 'no-cors', 
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            })
-            .then(() => {
-                // Возвращаем кнопку в исходное состояние через 3 секунды, 
-                // чтобы пользователь не думал, что всё зависло
-                setTimeout(() => {
-                    btn.innerText = "ЗАКАЗАТЬ LE VASE LIVRE";
-                    btn.disabled = false;
-                    tg.showAlert("Заявка отправлена! Ожидайте сообщения от консьержа.");
-                }, 3000);
-            })
-            .catch(error => {
+        fetch('https://eoq7cejdotidzt7.m.pipedream.net/', {
+            method: 'POST',
+            mode: 'no-cors', 
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        })
+        .then(() => {
+            setTimeout(() => {
                 btn.innerText = "ЗАКАЗАТЬ LE VASE LIVRE";
                 btn.disabled = false;
-                tg.showAlert("Ошибка при отправке. Попробуйте еще раз.");
-            });
-        };
-    </script>
-</body>
-</html>
+                tg.showAlert("Заявка отправлена! Ожидайте сообщения от консьержа.");
+            }, 3000);
+        })
+        .catch(error => {
+            btn.innerText = "ЗАКАЗАТЬ LE VASE LIVRE";
+            btn.disabled = false;
+            tg.showAlert("Ошибка при отправке. Попробуйте еще раз.");
+        });
+    };
+</script>
