@@ -12,6 +12,20 @@
             --accent-color: #8e7f71;
         }
 
+        .back-btn {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            font-size: 14px;
+            color: var(--accent-color);
+            cursor: pointer;
+            padding: 10px;
+            z-index: 2000;
+            opacity: 0.6;
+            transition: opacity 0.3s ease;
+        }
+        .back-btn:hover { opacity: 1; }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, serif;
             background-color: var(--bg-color);
@@ -24,7 +38,6 @@
             min-height: 100vh;
         }
 
-        /* Анимация плавного появления */
         .cinematic-fade {
             opacity: 0;
             filter: blur(4px);
@@ -47,11 +60,7 @@
             margin: 30px 0;
         }
 
-        .logo {
-            width: 220px;
-            height: auto;
-            display: block;
-        }
+        .logo { width: 220px; height: auto; display: block; }
 
         h2 {
             font-weight: 300;
@@ -62,11 +71,7 @@
             text-align: center;
         }
 
-        .container {
-            width: 100%;
-            max-width: 400px;
-            flex-grow: 1;
-        }
+        .container { width: 100%; max-width: 400px; flex-grow: 1; }
 
         input {
             width: 100%;
@@ -82,34 +87,27 @@
             transition: border-color 0.2s ease;
         }
 
-        input:focus {
-            border-color: var(--accent-color);
-        }
+        input:focus { border-color: var(--accent-color); }
 
-        /* Компоненты Умного поиска городов */
-        .autocomplete-wrapper {
-            position: relative;
-            width: 100%;
-        }
+        .autocomplete-wrapper { position: relative; width: 100%; }
 
+        /* ИСПРАВЛЕНО: Позиционирование списка */
         .suggestions-list {
             position: absolute;
-            top: calc(100% - 12px);
+            top: 100%; /* Начинается ровно под инпутом */
             left: 0;
             right: 0;
+            margin-top: 4px; /* Небольшой отступ от инпута */
             background: #ffffff;
             border: 1px solid #e0ddd5;
             border-radius: 10px;
             max-height: 180px;
             overflow-y: auto;
-            z-index: 1000;
-            box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.04);
-            margin-bottom: 15px;
+            z-index: 1000; /* Гарантирует, что список выше всех */
+            box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.08);
         }
 
-        .suggestions-hidden {
-            display: none;
-        }
+        .suggestions-hidden { display: none; }
 
         .suggestion-item {
             padding: 14px 16px;
@@ -119,15 +117,9 @@
             text-align: left;
         }
 
-        .suggestion-item:last-child {
-            border-bottom: none;
-        }
+        .suggestion-item:last-child { border-bottom: none; }
+        .suggestion-item:active { background-color: #faf9f6; }
 
-        .suggestion-item:active {
-            background-color: #faf9f6;
-        }
-
-        /* Информационные плашки статуса доставки */
         .delivery-status {
             padding: 15px;
             border-radius: 10px;
@@ -138,21 +130,9 @@
             border-left: 3px solid transparent;
         }
 
-        .status-success {
-            background-color: #f3f1eb;
-            color: var(--brand-color);
-            border-left-color: var(--accent-color);
-        }
-
-        .status-warning {
-            background-color: #fff5f5;
-            color: #8a3333;
-            border-left-color: #8a3333;
-        }
-
-        .status-hidden {
-            display: none;
-        }
+        .status-success { background-color: #f3f1eb; color: var(--brand-color); border-left-color: var(--accent-color); }
+        .status-warning { background-color: #fff5f5; color: #8a3333; border-left-color: #8a3333; }
+        .status-hidden { display: none; }
 
         button {
             width: 100%;
@@ -170,19 +150,9 @@
             margin-top: 10px;
         }
 
-        button:disabled {
-            background-color: #777;
-            opacity: 0.7;
-        }
+        button:disabled { background-color: #777; opacity: 0.7; }
 
-        .info-text {
-            margin-top: 20px;
-            text-align: center;
-            font-size: 13px;
-            color: var(--accent-color);
-            line-height: 1.5;
-            font-style: italic;
-        }
+        .info-text { margin-top: 20px; text-align: center; font-size: 13px; color: var(--accent-color); line-height: 1.5; font-style: italic; }
 
         .footer {
             margin-top: 40px;
@@ -197,6 +167,8 @@
     </style>
 </head>
 <body>
+
+    <div class="back-btn" onclick="window.history.back()">← Назад</div>
 
     <div class="logo-container cinematic-fade">
         <img src="https://cdn.jsdelivr.net/gh/UpperTrout71529/Spring-Renaissance-Concierge@main/SR%20LOGO%20PNG.png" alt="Spring Renaissance" class="logo">
@@ -234,16 +206,18 @@
     </div>
 
     <script>
-    // Запуск плавной анимации появления элементов
     document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.cinematic-fade').forEach((el, index) => {
             setTimeout(() => {
                 el.classList.add('is-visible');
-            }, index * 90 + 50); // index * 90 создает эффект водопада сверху вниз
+            }, index * 90 + 50);
         });
     });
 
     let tg = window.Telegram.WebApp;
+    tg.BackButton.show();
+    tg.BackButton.onClick(() => { window.history.back(); });
+
     let btn = document.getElementById('send');
     let cityInput = document.getElementById('city');
     let suggestionsList = document.getElementById('suggestions');
@@ -335,13 +309,7 @@
         btn.innerText = "ЗАПИСАНО";
         btn.disabled = true;
 
-        let data = {
-            name: name,
-            phone: phone,
-            city: city,
-            address: address,
-            telegram: telegram
-        };
+        let data = { name, phone, city, address, telegram };
 
         fetch('https://eoq7cejdotidzt7.m.pipedream.net/', {
             method: 'POST',
