@@ -1,694 +1,361 @@
 <!DOCTYPE html>
-
 <html>
-
 <head>
-
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-
     <style>
-
         :root {
-
             --brand-color: #2c2c2c;
-
             --bg-color: #faf9f6;
-
             --input-bg: #ffffff;
-
             --accent-color: #8e7f71;
-
         }
 
-
+        /* Добавленный стиль для кнопки назад */
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 2000;
+            color: var(--accent-color);
+            cursor: pointer;
+            font-size: 14px;
+            text-transform: uppercase;
+        }
 
         body {
-
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, serif;
-
             background-color: var(--bg-color);
-
             color: var(--brand-color);
-
             margin: 0;
-
             padding: 20px;
-
             display: flex;
-
             flex-direction: column;
-
             align-items: center;
-
             min-height: 100vh;
-
         }
-
-
 
         .logo-container {
-
             width: 100%;
-
             display: flex;
-
             justify-content: center;
-
             margin: 30px 0;
-
         }
-
-
 
         .logo {
-
             width: 220px;
-
             height: auto;
-
             display: block;
-
         }
-
-
 
         h2 {
-
             font-weight: 300;
-
             letter-spacing: 1.5px;
-
             margin-bottom: 25px;
-
             text-transform: uppercase;
-
             font-size: 1.1em;
-
             text-align: center;
-
         }
-
-
 
         .container {
-
             width: 100%;
-
             max-width: 400px;
-
             flex-grow: 1;
-
         }
-
-
 
         input {
-
             width: 100%;
-
             padding: 16px;
-
             margin-bottom: 15px;
-
             border: 1px solid #e0ddd5;
-
             border-radius: 10px;
-
             background: var(--input-bg);
-
             box-sizing: border-box;
-
             outline: none;
-
             font-size: 16px;
-
             -webkit-appearance: none;
-
             transition: border-color 0.2s ease;
-
         }
-
-
 
         input:focus {
-
             border-color: var(--accent-color);
-
         }
-
-
 
         /* Компоненты Умного поиска городов */
-
         .autocomplete-wrapper {
-
             position: relative;
-
             width: 100%;
-
         }
-
-
 
         .suggestions-list {
-
             position: absolute;
-
             top: calc(100% - 12px);
-
             left: 0;
-
             right: 0;
-
             background: #ffffff;
-
             border: 1px solid #e0ddd5;
-
             border-radius: 10px;
-
             max-height: 180px;
-
             overflow-y: auto;
-
             z-index: 1000;
-
             box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.04);
-
             margin-bottom: 15px;
-
         }
-
-
 
         .suggestions-hidden {
-
             display: none;
-
         }
-
-
 
         .suggestion-item {
-
             padding: 14px 16px;
-
             font-size: 15px;
-
             cursor: pointer;
-
             border-bottom: 1px solid #faf9f6;
-
             text-align: left;
-
         }
-
-
 
         .suggestion-item:last-child {
-
             border-bottom: none;
-
         }
-
-
 
         .suggestion-item:active {
-
             background-color: #faf9f6;
-
         }
-
-
 
         /* Информационные плашки статуса доставки */
-
         .delivery-status {
-
             padding: 15px;
-
             border-radius: 10px;
-
             font-size: 13px;
-
             line-height: 1.5;
-
             margin-bottom: 15px;
-
             text-align: left;
-
             border-left: 3px solid transparent;
-
         }
-
-
 
         .status-success {
-
             background-color: #f3f1eb;
-
             color: var(--brand-color);
-
             border-left-color: var(--accent-color);
-
         }
-
-
 
         .status-warning {
-
             background-color: #fff5f5;
-
             color: #8a3333;
-
             border-left-color: #8a3333;
-
         }
-
-
 
         .status-hidden {
-
             display: none;
-
         }
-
-
 
         button {
-
             width: 100%;
-
             padding: 18px;
-
             background-color: var(--brand-color);
-
             color: white;
-
             border: none;
-
             border-radius: 10px;
-
             cursor: pointer;
-
             font-size: 15px;
-
             font-weight: 600;
-
             letter-spacing: 1px;
-
             text-transform: uppercase;
-
             transition: all 0.2s ease;
-
             margin-top: 10px;
-
         }
-
-
 
         button:disabled {
-
             background-color: #777;
-
             opacity: 0.7;
-
         }
-
-
 
         .info-text {
-
             margin-top: 20px;
-
             text-align: center;
-
             font-size: 13px;
-
             color: var(--accent-color);
-
             line-height: 1.5;
-
             font-style: italic;
-
         }
-
-
 
         .footer {
-
             margin-top: 40px;
-
             padding-bottom: 20px;
-
             text-align: center;
-
             font-size: 10px;
-
             color: #a0a0a0;
-
             line-height: 1.6;
-
             width: 100%;
-
             max-width: 400px;
-
         }
-
     </style>
-
 </head>
-
 <body>
 
-
+    <div class="back-btn" onclick="window.history.back()">← Назад</div>
 
     <div class="logo-container">
-
         <img src="https://cdn.jsdelivr.net/gh/UpperTrout71529/Spring-Renaissance-Concierge@main/SR%20LOGO%20PNG.png" alt="Spring Renaissance" class="logo">
-
     </div>
-
-
 
     <div class="container">
-
         <h2>Оформление заказа</h2>
-
         <input type="text" id="name" placeholder="Ваше Имя">
-
         <input type="tel" id="phone" placeholder="Ваш Номер Телефона">
-
         
-
         <div class="autocomplete-wrapper">
-
             <input type="text" id="city" placeholder="Город доставки" autocomplete="off">
-
             <div id="suggestions" class="suggestions-list suggestions-hidden"></div>
-
         </div>
-
         
-
         <div id="delivery-status" class="delivery-status status-hidden"></div>
 
-
-
         <input type="text" id="address" placeholder="Ваш Адрес (Улица, дом, квартира)">
-
         <input type="text" id="telegram" placeholder="Ваш Телеграм">
-
         <button id="send">ЗАКАЗАТЬ LE VASE LIVRE</button>
-
         
-
         <div class="info-text">
-
             После заполнения формы наш консьерж свяжется с вами в Telegram для подтверждения заказа. Спасибо!
-
         </div>
-
     </div>
-
-
 
     <div class="footer">
-
         © 2026 Spring Renaissance. Все права защищены.<br>
-
         Индивидуальный предприниматель Саградян Ф.К.<br>
-
         ИНН: 771987616590 | ОГРНИП: 324774600000000<br>
-
         Москва, Россия. <br>
-
         Нажимая кнопку, вы соглашаетесь с политикой конфиденциальности.
-
     </div>
 
-
-
     <script>
-
     let tg = window.Telegram.WebApp;
-
     let btn = document.getElementById('send');
-
     let cityInput = document.getElementById('city');
-
     let suggestionsList = document.getElementById('suggestions');
-
     let statusBox = document.getElementById('delivery-status');
-
     
-
     tg.expand();
-
     tg.ready();
 
-
-
     // База географического покрытия Dalli из твоих документов (основные направления)
-
     const DalliCities = [
-
         { name: "Москва", time: "1 день (завтра)", type: "Next Day" },
-
         { name: "Санкт-Петербург", time: "1 день (завтра)", type: "Next Day" },
-
         { name: "Тула", time: "1 день (завтра)", type: "Next Day" },
-
         { name: "Калуга", time: "1 день (завтра)", type: "Next Day" },
-
         { name: "Орел", time: "1 день (завтра)", type: "Next Day" },
-
         { name: "Воронеж", time: "1 день (завтра)", type: "Next Day" },
-
         { name: "Тверь", time: "1 день (завтра)", type: "Next Day" },
-
         { name: "Ярославль", time: "1 день (завтра)", type: "Next Day" },
-
         { name: "Липецк", time: "1 день (завтра)", type: "Next Day" },
-
         { name: "Нижний Новгород", time: "1-2 дня", type: "Standard" },
-
         { name: "Казань", time: "2-3 дня", type: "Standard" },
-
         { name: "Ростов-на-Дону", time: "2-3 дня", type: "Standard" },
-
         { name: "Краснодар", time: "2-3 дня", type: "Standard" },
-
         { name: "Сочи", time: "2-3 дня", type: "Standard" },
-
         { name: "Самара", time: "2-3 дня", type: "Standard" },
-
         { name: "Екатеринбург", time: "2-3 дня", type: "Standard" },
-
         { name: "Челябинск", time: "2-3 дня", type: "Standard" },
-
         { name: "Пермь", time: "2-3 дня", type: "Standard" },
-
         { name: "Новосибирск", time: "5 дней", type: "Siberia" },
-
         { name: "Омск", time: "4 дня", type: "Siberia" },
-
         { name: "Красноярск", time: "6 дней", type: "Siberia" }
-
     ];
 
-
-
     // Логика живого поиска городов
-
     cityInput.addEventListener('input', function() {
-
         let query = this.value.trim().toLowerCase();
-
         suggestionsList.innerHTML = '';
-
         
-
         if (query.length < 2) {
-
             suggestionsList.classList.add('suggestions-hidden');
-
             statusBox.classList.add('status-hidden');
-
             return;
-
         }
-
-
 
         let matches = DalliCities.filter(item => item.name.toLowerCase().startsWith(query));
 
-
-
         if (matches.length > 0) {
-
             suggestionsList.classList.remove('suggestions-hidden');
-
             statusBox.classList.add('status-hidden');
-
             
-
             matches.forEach(item => {
-
                 let div = document.createElement('div');
-
                 div.className = 'suggestion-item';
-
                 div.textContent = item.name;
-
                 div.onclick = function() {
-
                     cityInput.value = item.name;
-
                     suggestionsList.classList.add('suggestions-hidden');
-
                     
-
                     // Показываем премиальный статус доставки Dalli
-
                     statusBox.className = 'delivery-status status-success';
-
                     statusBox.innerHTML = `✨ <strong>Доставка курьером Dalli до двери:</strong> срок составит всего ${item.time}.<br>Вам доступен осмотр объекта и примерка перед покупкой (15 минут).`;
-
                     statusBox.classList.remove('status-hidden');
-
                 };
-
                 suggestionsList.appendChild(div);
-
             });
-
         } else {
-
             // Если города нет в покрытии Dalli
-
             suggestionsList.classList.add('suggestions-hidden');
-
             statusBox.className = 'delivery-status status-warning';
-
             statusBox.innerHTML = `К сожалению, в данный населенный пункт автоматическая экспресс-доставка Dalli недоступна.<br><br>Пожалуйста, завершите оформление — наш консьерж индивидуально согласует отправку альтернативной курьерской службой.`;
-
             statusBox.classList.remove('status-hidden');
-
         }
-
     });
-
-
 
     // Закрывать список предложений, если кликнули мимо
-
     document.addEventListener('click', function(e) {
-
         if (e.target !== cityInput) {
-
             suggestionsList.classList.add('suggestions-hidden');
-
         }
-
     });
 
-
-
     btn.onclick = function() {
-
         let name = document.getElementById('name').value;
-
         let phone = document.getElementById('phone').value;
-
         let city = document.getElementById('city').value;
-
         let address = document.getElementById('address').value;
-
         let telegram = document.getElementById('telegram').value;
 
-
-
         // Валидация полей (включая город)
-
         if (name.length < 2 || phone.length < 5 || city.length < 2 || address.length < 5 || telegram.length < 2) {
-
             tg.showAlert("Пожалуйста, заполните все контактные данные полностью");
-
             return;
-
         }
 
-
-
         btn.innerText = "ЗАПИСАНО";
-
         btn.disabled = true;
 
-
-
         // Полный пакет данных для Pipedream, обогащенный выбранным городом
-
         let data = {
-
             name: name,
-
             phone: phone,
-
             city: city,
-
             address: address,
-
             telegram: telegram
-
         };
 
-
-
         fetch('https://eoq7cejdotidzt7.m.pipedream.net/', {
-
             method: 'POST',
-
             mode: 'no-cors', 
-
             headers: { 'Content-Type': 'application/json' },
-
             body: JSON.stringify(data)
-
         })
-
         .then(() => {
-
             setTimeout(() => {
-
                 btn.innerText = "ЗАКАЗАТЬ LE VASE LIVRE";
-
                 btn.disabled = false;
-
                 tg.showAlert("Заявка отправлена! Ожидайте сообщения от консьержа.");
-
             }, 3000);
-
         })
-
         .catch(error => {
-
             btn.innerText = "ЗАКАЗАТЬ LE VASE LIVRE";
-
             btn.disabled = false;
-
             tg.showAlert("Ошибка при отправке. Попробуйте еще раз.");
-
         });
-
     };
-
 </script>
-
 </body>
-
-</html> 
-
+</html>
