@@ -12,16 +12,17 @@
             --accent-color: #8e7f71;
         }
 
-        /* Добавленный стиль для кнопки назад */
+        /* Измененный стиль кнопки: статичное позиционирование в общей структуре */
         .back-btn {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            z-index: 2000;
+            width: 100%;
+            max-width: 400px;
+            text-align: left;
+            margin-bottom: 5px;
             color: var(--accent-color);
             cursor: pointer;
             font-size: 14px;
             text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         body {
@@ -82,7 +83,6 @@
             border-color: var(--accent-color);
         }
 
-        /* Компоненты Умного поиска городов */
         .autocomplete-wrapper {
             position: relative;
             width: 100%;
@@ -123,7 +123,6 @@
             background-color: #faf9f6;
         }
 
-        /* Информационные плашки статуса доставки */
         .delivery-status {
             padding: 15px;
             border-radius: 10px;
@@ -239,7 +238,6 @@
     tg.expand();
     tg.ready();
 
-    // База географического покрытия Dalli из твоих документов (основные направления)
     const DalliCities = [
         { name: "Москва", time: "1 день (завтра)", type: "Next Day" },
         { name: "Санкт-Петербург", time: "1 день (завтра)", type: "Next Day" },
@@ -264,7 +262,6 @@
         { name: "Красноярск", time: "6 дней", type: "Siberia" }
     ];
 
-    // Логика живого поиска городов
     cityInput.addEventListener('input', function() {
         let query = this.value.trim().toLowerCase();
         suggestionsList.innerHTML = '';
@@ -289,7 +286,6 @@
                     cityInput.value = item.name;
                     suggestionsList.classList.add('suggestions-hidden');
                     
-                    // Показываем премиальный статус доставки Dalli
                     statusBox.className = 'delivery-status status-success';
                     statusBox.innerHTML = `✨ <strong>Доставка курьером Dalli до двери:</strong> срок составит всего ${item.time}.<br>Вам доступен осмотр объекта и примерка перед покупкой (15 минут).`;
                     statusBox.classList.remove('status-hidden');
@@ -297,7 +293,6 @@
                 suggestionsList.appendChild(div);
             });
         } else {
-            // Если города нет в покрытии Dalli
             suggestionsList.classList.add('suggestions-hidden');
             statusBox.className = 'delivery-status status-warning';
             statusBox.innerHTML = `К сожалению, в данный населенный пункт автоматическая экспресс-доставка Dalli недоступна.<br><br>Пожалуйста, завершите оформление — наш консьерж индивидуально согласует отправку альтернативной курьерской службой.`;
@@ -305,7 +300,6 @@
         }
     });
 
-    // Закрывать список предложений, если кликнули мимо
     document.addEventListener('click', function(e) {
         if (e.target !== cityInput) {
             suggestionsList.classList.add('suggestions-hidden');
@@ -319,7 +313,6 @@
         let address = document.getElementById('address').value;
         let telegram = document.getElementById('telegram').value;
 
-        // Валидация полей (включая город)
         if (name.length < 2 || phone.length < 5 || city.length < 2 || address.length < 5 || telegram.length < 2) {
             tg.showAlert("Пожалуйста, заполните все контактные данные полностью");
             return;
@@ -328,7 +321,6 @@
         btn.innerText = "ЗАПИСАНО";
         btn.disabled = true;
 
-        // Полный пакет данных для Pipedream, обогащенный выбранным городом
         let data = {
             name: name,
             phone: phone,
