@@ -211,6 +211,9 @@
         <div id="delivery-status" class="delivery-status status-hidden"></div>
 
         <input type="text" id="address" placeholder="Ваш Адрес (Улица, дом, квартира)">
+        
+        <input type="text" id="telegram" placeholder="Ваш Телеграм (@username)" style="display: none;">
+        
         <button id="send">ЗАКАЗАТЬ LE VASE LIVRE</button>
         
         <div class="info-text">
@@ -228,16 +231,25 @@
 
     <script>
     let tg = window.Telegram.WebApp;
-    // Сюда вставь сгенерированную ссылку на оплату из личного кабинета Т-Бизнес
     const tBankPaymentUrl = "СЮДА_ВСТАВЬ_ССЫЛКУ_ИЗ_Т_БАНКА"; 
 
     let btn = document.getElementById('send');
     let cityInput = document.getElementById('city');
     let suggestionsList = document.getElementById('suggestions');
     let statusBox = document.getElementById('delivery-status');
+    let telegramInput = document.getElementById('telegram');
     
     tg.expand();
     tg.ready();
+
+    // Проверка среды: открыто в Telegram или в обычном браузере
+    // Если initData пустое — значит это внешний браузер (сайт)
+    let isTelegramEnv = tg.initData && tg.initData.length > 0;
+
+    if (!isTelegramEnv) {
+        // Если это внешний браузер, показываем поле ввода Telegram
+        telegramInput.style.display = 'block';
+    }
 
     const DalliCities = [
         { name: "Москва", time: "1 день (завтра)", type: "Next Day" },
@@ -312,30 +324,45 @@
         let phone = document.getElementById('phone').value;
         let city = document.getElementById('city').value;
         let address = document.getElementById('address').value;
+        let tgUser = "Не указан";
+
+        // Логика валидации и сбора Telegram данных в зависимости от среды
+        if (isTelegramEnv) {
+            if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+                tgUser = tg.initDataUnsafe.user.username ? "@" + tg.initDataUnsafe.user.username : "ID: " + tg.initDataUnsafe.user.id;
+            }
+        } else {
+            tgUser = telegramInput.value.trim();
+            if (tgUser.length < 2) {
+                if (isTelegramEnv) {
+                    tg.showAlert("Пожалуйста, заполните поле Telegram");
+                } else {
+                    alert("Пожалуйста, заполните поле Telegram");
+                }
+                return;
+            }
+        }
 
         if (name.length < 2 || phone.length < 5 || city.length < 2 || address.length < 5) {
-            tg.showAlert("Пожалуйста, заполните все контактные данные полностью");
+            if (isTelegramEnv) {
+                tg.showAlert("Пожалуйста, заполните все контактные данные полностью");
+            } else {
+                alert("Пожалуйста, заполните все контактные данные полностью");
+            }
             return;
         }
 
         btn.innerText = "ПЕРЕХОД К ОПЛАТЕ...";
         btn.disabled = true;
 
-        // Автоматически вытаскиваем Telegram юзернейм или ID из WebApp контекста
-        let tgUser = "Не определен";
-        if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-            tgUser = tg.initDataUnsafe.user.username ? "@" + tg.initDataUnsafe.user.username : "ID: " + tg.initDataUnsafe.user.id;
-        }
-
         let data = {
             name: name,
             phone: phone,
             city: city,
             address: address,
-            telegram: tgUser // Передаем автоматически собранный контакт
+            telegram: tgUser
         };
 
-        // Отправляем данные на Pipedream и сразу после этого редиректим на СБП/Т-Банк
         fetch('https://eoq7cejdotidzt7.m.pipedream.net/', {
             method: 'POST',
             mode: 'no-cors', 
@@ -343,10 +370,12 @@
             body: JSON.stringify(data)
         })
         .then(() => {
-            // Открываем платежную ссылку Т-Банка внутри интерфейса Telegram
-            tg.openLink(tBankPaymentUrl);
+            if (isTelegramEnv) {
+                tg.openLink(tBankPaymentUrl);
+            } else {
+                window.location.href = tBankPaymentUrl;
+            }
             
-            // На всякий случай возвращаем кнопку в исходное состояние, если клиент вернется назад
             setTimeout(() => {
                 btn.innerText = "ЗАКАЗАТЬ LE VASE LIVRE";
                 btn.disabled = false;
@@ -355,7 +384,11 @@
         .catch(error => {
             btn.innerText = "ЗАКАЗАТЬ LE VASE LIVRE";
             btn.disabled = false;
-            tg.showAlert("Ошибка при отправке данных. Попробуйте еще раз.");
+            if (isTelegramEnv) {
+                tg.showAlert("Ошибка при отправке данных. Попробуйте еще раз.");
+            } else {
+                alert("Ошибка при отправке данных. Попробуйте еще раз.");
+            }
         });
     };
 </script>
