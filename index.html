@@ -12,7 +12,6 @@
             --accent-color: #8e7f71;
         }
 
-        /* Измененный стиль кнопки: статичное позиционирование в общей структуре */
         .back-btn {
             width: 100%;
             max-width: 400px;
@@ -212,11 +211,10 @@
         <div id="delivery-status" class="delivery-status status-hidden"></div>
 
         <input type="text" id="address" placeholder="Ваш Адрес (Улица, дом, квартира)">
-        <input type="text" id="telegram" placeholder="Ваш Телеграм">
         <button id="send">ЗАКАЗАТЬ LE VASE LIVRE</button>
         
         <div class="info-text">
-            После заполнения формы наш консьерж свяжется с вами в Telegram для подтверждения заказа. Спасибо!
+            После успешной оплаты наш консьерж свяжется с вами в Telegram для подтверждения и уточнения деталей доставки. Спасибо!
         </div>
     </div>
 
@@ -230,6 +228,9 @@
 
     <script>
     let tg = window.Telegram.WebApp;
+    // Сюда вставь сгенерированную ссылку на оплату из личного кабинета Т-Бизнес
+    const tBankPaymentUrl = "СЮДА_ВСТАВЬ_ССЫЛКУ_ИЗ_Т_БАНКА"; 
+
     let btn = document.getElementById('send');
     let cityInput = document.getElementById('city');
     let suggestionsList = document.getElementById('suggestions');
@@ -311,24 +312,30 @@
         let phone = document.getElementById('phone').value;
         let city = document.getElementById('city').value;
         let address = document.getElementById('address').value;
-        let telegram = document.getElementById('telegram').value;
 
-        if (name.length < 2 || phone.length < 5 || city.length < 2 || address.length < 5 || telegram.length < 2) {
+        if (name.length < 2 || phone.length < 5 || city.length < 2 || address.length < 5) {
             tg.showAlert("Пожалуйста, заполните все контактные данные полностью");
             return;
         }
 
-        btn.innerText = "ЗАПИСАНО";
+        btn.innerText = "ПЕРЕХОД К ОПЛАТЕ...";
         btn.disabled = true;
+
+        // Автоматически вытаскиваем Telegram юзернейм или ID из WebApp контекста
+        let tgUser = "Не определен";
+        if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+            tgUser = tg.initDataUnsafe.user.username ? "@" + tg.initDataUnsafe.user.username : "ID: " + tg.initDataUnsafe.user.id;
+        }
 
         let data = {
             name: name,
             phone: phone,
             city: city,
             address: address,
-            telegram: telegram
+            telegram: tgUser // Передаем автоматически собранный контакт
         };
 
+        // Отправляем данные на Pipedream и сразу после этого редиректим на СБП/Т-Банк
         fetch('https://eoq7cejdotidzt7.m.pipedream.net/', {
             method: 'POST',
             mode: 'no-cors', 
@@ -336,16 +343,19 @@
             body: JSON.stringify(data)
         })
         .then(() => {
+            // Открываем платежную ссылку Т-Банка внутри интерфейса Telegram
+            tg.openLink(tBankPaymentUrl);
+            
+            // На всякий случай возвращаем кнопку в исходное состояние, если клиент вернется назад
             setTimeout(() => {
                 btn.innerText = "ЗАКАЗАТЬ LE VASE LIVRE";
                 btn.disabled = false;
-                tg.showAlert("Заявка отправлена! Ожидайте сообщения от консьержа.");
-            }, 3000);
+            }, 2000);
         })
         .catch(error => {
             btn.innerText = "ЗАКАЗАТЬ LE VASE LIVRE";
             btn.disabled = false;
-            tg.showAlert("Ошибка при отправке. Попробуйте еще раз.");
+            tg.showAlert("Ошибка при отправке данных. Попробуйте еще раз.");
         });
     };
 </script>
