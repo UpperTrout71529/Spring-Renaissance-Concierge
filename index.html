@@ -229,10 +229,9 @@
         Нажимая кнопку, вы соглашаетесь с политикой конфиденциальности.
     </div>
 
-    <script>
+  <script>
     let tg = window.Telegram.WebApp;
-    const tBankPaymentUrl = "https://paylink.tbank.ru/ea65f124-0c85-4b79-9ae5-86625ccbb52a"; 
-
+    
     let btn = document.getElementById('send');
     let cityInput = document.getElementById('city');
     let suggestionsList = document.getElementById('suggestions');
@@ -243,7 +242,6 @@
     tg.ready();
 
     // Проверка среды: открыто в Telegram или в обычном браузере
-    // Если initData пустое — значит это внешний браузер (сайт)
     let isTelegramEnv = tg.initData && tg.initData.length > 0;
 
     if (!isTelegramEnv) {
@@ -326,7 +324,6 @@
         let address = document.getElementById('address').value;
         let tgUser = "Не указан";
 
-        // Логика валидации и сбора Telegram данных в зависимости от среды
         if (isTelegramEnv) {
             if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
                 tgUser = tg.initDataUnsafe.user.username ? "@" + tg.initDataUnsafe.user.username : "ID: " + tg.initDataUnsafe.user.id;
@@ -334,11 +331,7 @@
         } else {
             tgUser = telegramInput.value.trim();
             if (tgUser.length < 2) {
-                if (isTelegramEnv) {
-                    tg.showAlert("Пожалуйста, заполните поле Telegram");
-                } else {
-                    alert("Пожалуйста, заполните поле Telegram");
-                }
+                alert("Пожалуйста, заполните поле Telegram");
                 return;
             }
         }
@@ -352,7 +345,7 @@
             return;
         }
 
-        btn.innerText = "ПЕРЕХОД К ОПЛАТЕ...";
+        btn.innerText = "ГЕНЕРАЦИЯ ПЛАТЕЖА...";
         btn.disabled = true;
 
         let data = {
@@ -363,17 +356,28 @@
             telegram: tgUser
         };
 
+        // Запрос к твоему Pipedream воркфлоу
         fetch('https://eoq7cejdotidzt7.m.pipedream.net/', {
             method: 'POST',
-            mode: 'no-cors', 
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
         })
-        .then(() => {
-            if (isTelegramEnv) {
-                tg.openLink(tBankPaymentUrl);
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Ошибка ответа сервера');
+            }
+            return response.json(); // Парсим JSON, пришедший от Node-шага в Pipedream
+        })
+        .then(resData => {
+            // Проверяем, вернул ли банк рабочую ссылку
+            if (resData && resData.paymentUrl) {
+                if (isTelegramEnv) {
+                    tg.openLink(resData.paymentUrl);
+                } else {
+                    window.location.href = resData.paymentUrl;
+                }
             } else {
-                window.location.href = tBankPaymentUrl;
+                throw new Error('Ссылка на оплату не найдена в ответе');
             }
             
             setTimeout(() => {
@@ -382,12 +386,13 @@
             }, 2000);
         })
         .catch(error => {
+            console.error('Ошибка:', error);
             btn.innerText = "ЗАКАЗАТЬ LE VASE LIVRE";
             btn.disabled = false;
             if (isTelegramEnv) {
-                tg.showAlert("Ошибка при отправке данных. Попробуйте еще раз.");
+                tg.showAlert("Не удалось сформировать счет. Пожалуйста, попробуйте позже.");
             } else {
-                alert("Ошибка при отправке данных. Попробуйте еще раз.");
+                alert("Не удалось сформировать счет. Пожалуйста, попробуйте позже.");
             }
         });
     };
