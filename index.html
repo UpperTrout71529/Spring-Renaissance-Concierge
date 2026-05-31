@@ -188,6 +188,78 @@
             width: 100%;
             max-width: 400px;
         }
+
+        /* ЭЛЕМЕНТЫ ТИХОЙ РОСКОШИ: КУРАТОРСКИЙ МОДАЛЬНЫЙ ЭКРАН */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.45);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 20px;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+        }
+
+        .modal-card {
+            background: var(--bg-color);
+            border: 1px solid #e0ddd5;
+            border-radius: 14px;
+            padding: 28px;
+            width: 100%;
+            max-width: 360px;
+            box-shadow: 0px 12px 34px rgba(0, 0, 0, 0.08);
+            text-align: center;
+            box-sizing: border-box;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .modal-title {
+            font-size: 13px;
+            font-weight: 400;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 18px;
+            color: var(--brand-color);
+        }
+
+        .modal-text {
+            font-size: 13px;
+            line-height: 1.6;
+            color: var(--brand-color);
+            margin-bottom: 26px;
+            text-align: left;
+        }
+
+        .modal-cancel {
+            display: inline-block;
+            margin-top: 16px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--accent-color);
+            cursor: pointer;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .modal-cancel:hover {
+            color: var(--brand-color);
+        }
+
+        .modal-hidden {
+            display: none !important;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.96); }
+            to { opacity: 1; transform: scale(1); }
+        }
     </style>
 </head>
 <body>
@@ -221,6 +293,19 @@
         </div>
     </div>
 
+    <!-- ЗАКРЫТЫЙ СЛОЙ ВАЛИДАЦИИ СТАТУСА АЛЛОКАЦИИ -->
+    <div id="allocation-modal" class="modal-overlay modal-hidden">
+        <div class="modal-card">
+            <div class="modal-title">🗝 Внимание к статусу аллокации</div>
+            <div class="modal-text">
+                Переходя к подтверждению резерва, вы запрашиваете фиксацию за своим профилем уникального коллекционного номера (от №001 до №300), который вносится в печатный <em>Curator's Guide</em> и закрытый цифровой Реестр подлинности.<br><br>
+                Отказ от подтвержденной ателье-комиссии или нарушение графика распределения платежей влечет за собой <strong>безвозвратное аннулирование статуса раннего резидента</strong> и исключение вашего профиля из системы приоритетного доступа ко всем последующим закрытым релизом Дома.
+            </div>
+            <button id="confirm-reserve">Подтвердить серьезность намерений</button>
+            <div id="close-modal" class="modal-cancel">Вернуться к редактированию</div>
+        </div>
+    </div>
+
     <div class="footer">
         © 2026 Spring Renaissance. Все права защищены.<br>
         Лимитированное Launch-издание (300 экземпляров).<br>
@@ -239,6 +324,11 @@
     let suggestionsList = document.getElementById('suggestions');
     let statusBox = document.getElementById('delivery-status');
     let telegramInput = document.getElementById('telegram');
+    
+    // Элементы модального окна
+    let allocationModal = document.getElementById('allocation-modal');
+    let confirmReserveBtn = document.getElementById('confirm-reserve');
+    let closeModalBtn = document.getElementById('close-modal');
     
     tg.expand();
     tg.ready();
@@ -298,8 +388,8 @@
                     suggestionsList.classList.add('suggestions-hidden');
                     
                     statusBox.className = 'delivery-status status-success';
-                    // ИЗМЕНЕНО: Корректная формулировка для предзаказа
-                    statusBox.innerHTML = `✨ <strong>Бережная отгрузка релиза начнется 15 июля.</strong><br>После отправки курьер Dalli доставит объект до двери за ${item.time}. Вам будет доступен осмотр объекта перед подтверждением получения.`;
+                    // ИЗМЕНЕНО: Новая безопасная дата отгрузки релиза — 31 июля
+                    statusBox.innerHTML = `✨ <strong>Бережная отгрузка релиза начнется 31 июля.</strong><br>После отправки курьер Dalli доставит объект до двери за ${item.time}. Вам будет доступен осмотр объекта перед подтверждением получения.`;
                     statusBox.classList.remove('status-hidden');
                 };
                 suggestionsList.appendChild(div);
@@ -307,7 +397,8 @@
         } else {
             suggestionsList.classList.add('suggestions-hidden');
             statusBox.className = 'delivery-status status-warning';
-            statusBox.innerHTML = `В данный населенный пункт автоматическая экспресс-служба Dalli не интегрирована.<br><br>Пожалуйста, завершите резервирование — после 15 июля наш консьерж согласует с вами индивидуальную доставку альтернативной премиум-службой.`;
+            // ИЗМЕНЕНО: Новая безопасная дата отгрузки релиза — 31 июля
+            statusBox.innerHTML = `В данный населенный пункт автоматическая экспресс-служба Dalli не интегрирована.<br><br>Пожалуйста, завершите резервирование — после 31 июля наш консьерж согласует с вами индивидуальную доставку альтернативной премиум-службой.`;
             statusBox.classList.remove('status-hidden');
         }
     });
@@ -318,25 +409,17 @@
         }
     });
 
+    // ШАГ 1: Валидация данных формы перед выводом модального предупреждения
     btn.onclick = function() {
         let name = document.getElementById('name').value;
         let phone = document.getElementById('phone').value;
         let city = document.getElementById('city').value;
         let address = document.getElementById('address').value;
-        let tgUser = "Не указан";
 
-        if (isTelegramEnv) {
-            if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-                tgUser = tg.initDataUnsafe.user.username ? "@" + tg.initDataUnsafe.user.username : "ID: " + tg.initDataUnsafe.user.id;
-            }
-        } else {
-            tgUser = telegramInput.value.trim();
+        if (!isTelegramEnv) {
+            let tgUser = telegramInput.value.trim();
             if (tgUser.length < 2) {
-                if (isTelegramEnv) {
-                    tg.showAlert("Пожалуйста, укажите ваш Telegram для связи с консьержем");
-                } else {
-                    alert("Пожалуйста, укажите ваш Telegram для связи с консьержем");
-                }
+                alert("Пожалуйста, укажите ваш Telegram для связи с консьержем");
                 return;
             }
         }
@@ -350,6 +433,35 @@
             return;
         }
 
+        // Если валидация пройдена успешно — открываем закрытый модал аллокации
+        allocationModal.classList.remove('modal-hidden');
+    };
+
+    // Закрытие модального окна по кнопке возврата
+    closeModalBtn.onclick = function() {
+        allocationModal.classList.add('modal-hidden');
+    };
+
+    // ШАГ 2: Финальное выполнение резервирования и переход к платежному шлюзу
+    confirmReserveBtn.onclick = function() {
+        // Скрываем модальное окно, чтобы UI выглядел чистым
+        allocationModal.classList.add('modal-hidden');
+
+        let name = document.getElementById('name').value;
+        let phone = document.getElementById('phone').value;
+        let city = document.getElementById('city').value;
+        let address = document.getElementById('address').value;
+        let tgUser = "Не указан";
+
+        if (isTelegramEnv) {
+            if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+                tgUser = tg.initDataUnsafe.user.username ? "@" + tg.initDataUnsafe.user.username : "ID: " + tg.initDataUnsafe.user.id;
+            }
+        } else {
+            tgUser = telegramInput.value.trim();
+        }
+
+        // Блокируем основную кнопку чекаута
         btn.innerText = "СВЯЗЬ С БАНКОМ...";
         btn.disabled = true;
 
@@ -359,7 +471,7 @@
             city: city,
             address: address,
             telegram: tgUser,
-            order_type: "Pre-order Drop 1" // Маркер для Pipedream, чтобы ты видел, что это предзаказ
+            order_type: "Pre-order Drop 1"
         };
 
         fetch('https://eoq7cejdotidzt7.m.pipedream.net/', {
@@ -384,9 +496,9 @@
             btn.innerText = "ЗАРЕЗЕРВИРОВАТЬ LE VASE LIVRE";
             btn.disabled = false;
             if (isTelegramEnv) {
-                tg.showAlert("Произошла ошибка. Пожалуйста, повторите попытку.");
+                tg.showAlert("Произошла ошибка консьерж-сервиса. Пожалуйста, повторите попытку.");
             } else {
-                alert("Произошла ошибка. Пожалуйста, повторите попытку.");
+                alert("Произошла ошибка консьерж-сервиса. Пожалуйста, повторите попытку.");
             }
         });
     };
