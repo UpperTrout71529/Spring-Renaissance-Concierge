@@ -199,7 +199,7 @@
     </div>
 
     <div class="container">
-        <h2>Оформление заказа</h2>
+        <h2>Резервирование объекта</h2>
         <input type="text" id="name" placeholder="Ваше Имя">
         <input type="tel" id="phone" placeholder="Ваш Номер Телефона">
         
@@ -214,24 +214,26 @@
         
         <input type="text" id="telegram" placeholder="Ваш Телеграм (@username)" style="display: none;">
         
-        <button id="send">ЗАКАЗАТЬ LE VASE LIVRE</button>
+        <button id="send">ЗАРЕЗЕРВИРОВАТЬ LE VASE LIVRE</button>
         
         <div class="info-text">
-            После успешной оплаты наш консьерж свяжется с вами в Telegram для подтверждения и уточнения деталей доставки. Спасибо!
+            После подтверждения бронирования наш консьерж свяжется с вами в Telegram для фиксации вашего персонального номера в архивном паспорте изделия.
         </div>
     </div>
 
     <div class="footer">
         © 2026 Spring Renaissance. Все права защищены.<br>
+        Лимитированное Launch-издание (300 экземпляров).<br>
         Индивидуальный предприниматель Саградян Ф.К.<br>
         ИНН: 771987616590 | ОГРНИП: 326774600394419<br>
         Москва, Россия. <br>
         Нажимая кнопку, вы соглашаетесь с политикой конфиденциальности.
     </div>
 
-  <script>
+    <script>
     let tg = window.Telegram.WebApp;
-    
+    const tBankPaymentUrl = "https://paylink.tbank.ru/ea65f124-0c85-4b79-9ae5-86625ccbb52a"; 
+
     let btn = document.getElementById('send');
     let cityInput = document.getElementById('city');
     let suggestionsList = document.getElementById('suggestions');
@@ -241,24 +243,22 @@
     tg.expand();
     tg.ready();
 
-    // Проверка среды: открыто в Telegram или в обычном браузере
     let isTelegramEnv = tg.initData && tg.initData.length > 0;
 
     if (!isTelegramEnv) {
-        // Если это внешний браузер, показываем поле ввода Telegram
         telegramInput.style.display = 'block';
     }
 
     const DalliCities = [
-        { name: "Москва", time: "1 день (завтра)", type: "Next Day" },
-        { name: "Санкт-Петербург", time: "1 день (завтра)", type: "Next Day" },
-        { name: "Тула", time: "1 день (завтра)", type: "Next Day" },
-        { name: "Калуга", time: "1 день (завтра)", type: "Next Day" },
-        { name: "Орел", time: "1 день (завтра)", type: "Next Day" },
-        { name: "Воронеж", time: "1 день (завтра)", type: "Next Day" },
-        { name: "Тверь", time: "1 день (завтра)", type: "Next Day" },
-        { name: "Ярославль", time: "1 день (завтра)", type: "Next Day" },
-        { name: "Липецк", time: "1 день (завтра)", type: "Next Day" },
+        { name: "Москва", time: "1 день", type: "Next Day" },
+        { name: "Санкт-Петербург", time: "1 день", type: "Next Day" },
+        { name: "Тула", time: "1 день", type: "Next Day" },
+        { name: "Калуга", time: "1 день", type: "Next Day" },
+        { name: "Орел", time: "1 день", type: "Next Day" },
+        { name: "Воронеж", time: "1 день", type: "Next Day" },
+        { name: "Тверь", time: "1 день", type: "Next Day" },
+        { name: "Ярославль", time: "1 день", type: "Next Day" },
+        { name: "Липецк", time: "1 день", type: "Next Day" },
         { name: "Нижний Новгород", time: "1-2 дня", type: "Standard" },
         { name: "Казань", time: "2-3 дня", type: "Standard" },
         { name: "Ростов-на-Дону", time: "2-3 дня", type: "Standard" },
@@ -298,7 +298,8 @@
                     suggestionsList.classList.add('suggestions-hidden');
                     
                     statusBox.className = 'delivery-status status-success';
-                    statusBox.innerHTML = `✨ <strong>Доставка курьером Dalli до двери:</strong> срок составит всего ${item.time}.<br>Вам доступен осмотр объекта и примерка перед покупкой (15 минут).`;
+                    // ИЗМЕНЕНО: Корректная формулировка для предзаказа
+                    statusBox.innerHTML = `✨ <strong>Бережная отгрузка релиза начнется 15 июля.</strong><br>После отправки курьер Dalli доставит объект до двери за ${item.time}. Вам будет доступен осмотр объекта перед подтверждением получения.`;
                     statusBox.classList.remove('status-hidden');
                 };
                 suggestionsList.appendChild(div);
@@ -306,7 +307,7 @@
         } else {
             suggestionsList.classList.add('suggestions-hidden');
             statusBox.className = 'delivery-status status-warning';
-            statusBox.innerHTML = `К сожалению, в данный населенный пункт автоматическая экспресс-доставка Dalli недоступна.<br><br>Пожалуйста, завершите оформление — наш консьерж индивидуально согласует отправку альтернативной курьерской службой.`;
+            statusBox.innerHTML = `В данный населенный пункт автоматическая экспресс-служба Dalli не интегрирована.<br><br>Пожалуйста, завершите резервирование — после 15 июля наш консьерж согласует с вами индивидуальную доставку альтернативной премиум-службой.`;
             statusBox.classList.remove('status-hidden');
         }
     });
@@ -331,21 +332,25 @@
         } else {
             tgUser = telegramInput.value.trim();
             if (tgUser.length < 2) {
-                alert("Пожалуйста, заполните поле Telegram");
+                if (isTelegramEnv) {
+                    tg.showAlert("Пожалуйста, укажите ваш Telegram для связи с консьержем");
+                } else {
+                    alert("Пожалуйста, укажите ваш Telegram для связи с консьержем");
+                }
                 return;
             }
         }
 
         if (name.length < 2 || phone.length < 5 || city.length < 2 || address.length < 5) {
             if (isTelegramEnv) {
-                tg.showAlert("Пожалуйста, заполните все контактные данные полностью");
+                tg.showAlert("Пожалуйста, заполните все поля для подтверждения бронирования");
             } else {
-                alert("Пожалуйста, заполните все контактные данные полностью");
+                alert("Пожалуйста, заполните все поля для подтверждения бронирования");
             }
             return;
         }
 
-        btn.innerText = "ГЕНЕРАЦИЯ ПЛАТЕЖА...";
+        btn.innerText = "СВЯЗЬ С БАНКОМ...";
         btn.disabled = true;
 
         let data = {
@@ -353,46 +358,35 @@
             phone: phone,
             city: city,
             address: address,
-            telegram: tgUser
+            telegram: tgUser,
+            order_type: "Pre-order Drop 1" // Маркер для Pipedream, чтобы ты видел, что это предзаказ
         };
 
-        // Запрос к твоему Pipedream воркфлоу
         fetch('https://eoq7cejdotidzt7.m.pipedream.net/', {
             method: 'POST',
+            mode: 'no-cors', 
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
         })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Ошибка ответа сервера');
-            }
-            return response.json(); // Парсим JSON, пришедший от Node-шага в Pipedream
-        })
-        .then(resData => {
-            // Проверяем, вернул ли банк рабочую ссылку
-            if (resData && resData.paymentUrl) {
-                if (isTelegramEnv) {
-                    tg.openLink(resData.paymentUrl);
-                } else {
-                    window.location.href = resData.paymentUrl;
-                }
+        .then(() => {
+            if (isTelegramEnv) {
+                tg.openLink(tBankPaymentUrl);
             } else {
-                throw new Error('Ссылка на оплату не найдена в ответе');
+                window.location.href = tBankPaymentUrl;
             }
             
             setTimeout(() => {
-                btn.innerText = "ЗАКАЗАТЬ LE VASE LIVRE";
+                btn.innerText = "ЗАРЕЗЕРВИРОВАТЬ LE VASE LIVRE";
                 btn.disabled = false;
             }, 2000);
         })
         .catch(error => {
-            console.error('Ошибка:', error);
-            btn.innerText = "ЗАКАЗАТЬ LE VASE LIVRE";
+            btn.innerText = "ЗАРЕЗЕРВИРОВАТЬ LE VASE LIVRE";
             btn.disabled = false;
             if (isTelegramEnv) {
-                tg.showAlert("Не удалось сформировать счет. Пожалуйста, попробуйте позже.");
+                tg.showAlert("Произошла ошибка. Пожалуйста, повторите попытку.");
             } else {
-                alert("Не удалось сформировать счет. Пожалуйста, попробуйте позже.");
+                alert("Произошла ошибка. Пожалуйста, повторите попытку.");
             }
         });
     };
