@@ -189,7 +189,6 @@
             max-width: 400px;
         }
 
-        /* ЭЛЕМЕНТЫ ТИХОЙ РОСКОШИ: КУРАТОРСКИЙ МОДАЛЬНЫЙ ЭКРАН */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -283,7 +282,6 @@
         <div id="delivery-status" class="delivery-status status-hidden"></div>
 
         <input type="text" id="address" placeholder="Ваш Адрес (Улица, дом, квартира)">
-        
         <input type="text" id="telegram" placeholder="Ваш Телеграм (@username)" style="display: none;">
         
         <button id="send">ЗАРЕЗЕРВИРОВАТЬ LE VASE LIVRE</button>
@@ -293,13 +291,12 @@
         </div>
     </div>
 
-    <!-- ЗАКРЫТЫЙ СЛОЙ ВАЛИДАЦИИ СТАТУСА АЛЛОКАЦИИ -->
     <div id="allocation-modal" class="modal-overlay modal-hidden">
         <div class="modal-card">
-            <div class="modal-title"> Внимание к статусу объекта</div>
+            <div class="modal-title">Внимание к статусу объекта</div>
             <div class="modal-text">
-                Переходя к подтверждению резерва, вы запрашиваете фиксацию за своим профилем уникального коллекционного номера (от №001 до №300), который вносится в закрытый цифровой Реестр подлинности.<br><br>
-                Отказ от подтвержденной ателье-комиссии или нарушение графика распределения платежей влечет за собой <strong>безвозвратное аннулирование статуса раннего резидента</strong> и исключение вашего профиля из системы приоритетного доступа ко всем последующим закрытым релизом Дома.
+                Переходя к подтверждению... вы запрашиваете фиксацию за своим профилем уникального коллекционного номера (от №001 до №300), который вносится в закрытый цифровой Реестр подлинности.<br><br>
+                Отказ от подтвержденной ателье-комиссии или нарушение графика распределения платежей влечет за собой <strong>безвозвратное аннулирование статуса раннего резидента</strong>.
             </div>
             <button id="confirm-reserve">Подтвердить серьезность намерений</button>
             <div id="close-modal" class="modal-cancel">Вернуться к редактированию</div>
@@ -311,13 +308,12 @@
         Лимитированное Launch-издание (300 экземпляров).<br>
         Индивидуальный предприниматель Саградян Ф.К.<br>
         ИНН: 771987616590 | ОГРНИП: 326774600394419<br>
-        Москва, Россия. <br>
+        Москва, Россия.<br>
         Нажимая кнопку, вы соглашаетесь с политикой конфиденциальности.
     </div>
 
-    <script>
+<script>
     let tg = window.Telegram.WebApp;
-    const tBankPaymentUrl = "https://paylink.tbank.ru/ea65f124-0c85-4b79-9ae5-86625ccbb52a"; 
 
     let btn = document.getElementById('send');
     let cityInput = document.getElementById('city');
@@ -325,7 +321,6 @@
     let statusBox = document.getElementById('delivery-status');
     let telegramInput = document.getElementById('telegram');
     
-    // Элементы модального окна
     let allocationModal = document.getElementById('allocation-modal');
     let confirmReserveBtn = document.getElementById('confirm-reserve');
     let closeModalBtn = document.getElementById('close-modal');
@@ -388,7 +383,6 @@
                     suggestionsList.classList.add('suggestions-hidden');
                     
                     statusBox.className = 'delivery-status status-success';
-                    // ИЗМЕНЕНО: Новая безопасная дата отгрузки релиза — 31 июля
                     statusBox.innerHTML = `✨ <strong>Бережная отгрузка релиза начнется 31 июля.</strong><br>После отправки курьер Dalli доставит объект до двери за ${item.time}. Вам будет доступен осмотр объекта перед подтверждением получения.`;
                     statusBox.classList.remove('status-hidden');
                 };
@@ -397,7 +391,6 @@
         } else {
             suggestionsList.classList.add('suggestions-hidden');
             statusBox.className = 'delivery-status status-warning';
-            // ИЗМЕНЕНО: Новая безопасная дата отгрузки релиза — 31 июля
             statusBox.innerHTML = `В данный населенный пункт автоматическая экспресс-служба Dalli не интегрирована.<br><br>Пожалуйста, завершите резервирование — после 31 июля наш консьерж согласует с вами индивидуальную доставку альтернативной премиум-службой.`;
             statusBox.classList.remove('status-hidden');
         }
@@ -409,7 +402,6 @@
         }
     });
 
-    // ШАГ 1: Валидация данных формы перед выводом модального предупреждения
     btn.onclick = function() {
         let name = document.getElementById('name').value;
         let phone = document.getElementById('phone').value;
@@ -433,18 +425,14 @@
             return;
         }
 
-        // Если валидация пройдена успешно — открываем закрытый модал аллокации
         allocationModal.classList.remove('modal-hidden');
     };
 
-    // Закрытие модального окна по кнопке возврата
     closeModalBtn.onclick = function() {
         allocationModal.classList.add('modal-hidden');
     };
 
-    // ШАГ 2: Финальное выполнение резервирования и переход к платежному шлюзу
     confirmReserveBtn.onclick = function() {
-        // Скрываем модальное окно, чтобы UI выглядел чистым
         allocationModal.classList.add('modal-hidden');
 
         let name = document.getElementById('name').value;
@@ -461,7 +449,6 @@
             tgUser = telegramInput.value.trim();
         }
 
-        // Блокируем основную кнопку чекаута
         btn.innerText = "СВЯЗЬ С БАНКОМ...";
         btn.disabled = true;
 
@@ -471,34 +458,47 @@
             city: city,
             address: address,
             telegram: tgUser,
+            amount: 500000, // Передаем 5000 рублей в копейках напрямую в Pipedream
             order_type: "Pre-order Drop 1"
         };
 
+        // ИСПРАВЛЕНО: Убран mode: 'no-cors' для возможности принимать JSON-ответ со ссылкой
         fetch('https://eoq7cejdotidzt7.m.pipedream.net/', {
             method: 'POST',
-            mode: 'no-cors', 
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
         })
-        .then(() => {
-            if (isTelegramEnv) {
-                tg.openLink(tBankPaymentUrl);
-            } else {
-                window.location.href = tBankPaymentUrl;
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Ошибка сети при связи с сервером');
             }
-            
+            return response.json(); // Читаем JSON ответа от Pipedream
+        })
+        .then(resData => {
+            // ИСПРАВЛЕНО: Проверяем наличие динамического URL от СБП в ответе
+            if (resData && resData.paymentUrl) {
+                if (isTelegramEnv) {
+                    tg.openLink(resData.paymentUrl);
+                } else {
+                    window.location.href = resData.paymentUrl;
+                }
+            } else {
+                throw new Error('Ссылка на оплату не найдена в ответе сервера');
+            }
+
             setTimeout(() => {
                 btn.innerText = "ЗАРЕЗЕРВИРОВАТЬ LE VASE LIVRE";
                 btn.disabled = false;
             }, 2000);
         })
         .catch(error => {
+            console.error(error);
             btn.innerText = "ЗАРЕЗЕРВИРОВАТЬ LE VASE LIVRE";
             btn.disabled = false;
             if (isTelegramEnv) {
-                tg.showAlert("Произошла ошибка консьерж-сервиса. Пожалуйста, повторите попытку.");
+                tg.showAlert("Произошла ошибка консьерж-сервиса при генерации СБП-ссылки. Пожалуйста, повторите попытку.");
             } else {
-                alert("Произошла ошибка консьерж-сервиса. Пожалуйста, повторите попытку.");
+                alert("Произошла ошибка консьерж-сервиса при генерации СБП-ссылки. Пожалуйста, повторите попытку.");
             }
         });
     };
